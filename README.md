@@ -16,6 +16,8 @@
 4. After that `python manage.py createsuperuser` and fill up the credentials.
 5. Finally `python manage.py runserver`
 
+*You can try the covered tests with `python manage.py test`*
+
 - **GET:** http://127.0.0.1:8000/api/v1/products
 - **POST:** http://127.0.0.1:8000/api/v1/products/new
 - **DELETE/PUT:** http://127.0.0.1:8000/api/v1/products/1/update
