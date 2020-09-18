@@ -59,3 +59,28 @@ class ProductListTestCase(APITestCase):
         self.assertIsNone(response.data['previous'])
         self.assertEqual(response.data['count'], products_count)
         self.assertEqual(len(response.data['results']), products_count)
+
+
+class ProductUpdateTestCase(APITestCase):
+    def test_update_product(self):
+        product_attrs = {
+            'name': 'First Product',
+            'description': 'Awesome first product.',
+            'price': 99.99,
+        }
+        response = self.client.post(
+            '/api/v1/products/new', product_attrs, format='json')
+        if response.status_code != 201:
+            print(response.data)
+        product = Product.objects.first()
+        response = self.client.patch(
+            '/api/v1/products/{}/update'.format(product.id), {
+                'name': 'New Product',
+                'description': 'Awesome Product',
+                'price': 77.99,
+            },
+            format='json',
+        )
+        updated = Product.objects.get(id=product.id)
+
+        self.assertEqual(updated.name, 'New Product')
