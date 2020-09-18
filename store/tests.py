@@ -1,3 +1,6 @@
+import os.path
+from django.conf import settings
+
 from rest_framework.test import APITestCase
 
 from .models import Product
@@ -84,3 +87,44 @@ class ProductUpdateTestCase(APITestCase):
         updated = Product.objects.get(id=product.id)
 
         self.assertEqual(updated.name, 'New Product')
+
+    def test_upload_product_photo(self):
+        # initial_photo_path = os.path.join(
+        #     settings.MEDIA_ROOT, 'images', 'Abdullah_Al_Rafi.jpg')
+        product_attrs = {
+            'name': 'First Product',
+            'description': 'Awesome first product.',
+            'price': 99.99,
+            # 'photo': initial_photo_path,
+        }
+        response = self.client.post(
+            '/api/v1/products/new', product_attrs, format='json')
+        if response.status_code != 201:
+            print(response.data)
+
+        product = Product.objects.first()
+        original_photo = product.photo
+        photo_path = os.path.join(
+            settings.MEDIA_ROOT, 'images', 'Abdullah_Al_Rafi.jpg')
+
+        with open(photo_path, 'rb') as photo_data:
+            response = self.client.patch(
+                '/api/v1/products/{}/update'.format(product.id), {
+                    'photo': photo_data
+                }, format='multipart',
+            )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertNotEqual(response.data['photo'], original_photo)
+
+        try:
+            updated = Product.objects.get(id=product.id)
+            expected_photo = os.path.join(
+                settings.MEDIA_ROOT, 'images', 'Abdullah_Al_Rafi'
+            )
+
+            self.assertTrue(
+                updated.photo.path.startswith(expected_photo)
+            )
+        finally:
+            os.remove(updated.photo.path)
